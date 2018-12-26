@@ -1,0 +1,150 @@
+name: "CNet"
+layer {
+  name: "Count"
+  type: "MemoryData"
+  top: "data"
+  top: "label"
+  include {
+    phase: TRAIN
+  }
+  memory_data_param
+  {
+   batch_size: 1
+   channels: 1
+   height: 1
+   width: 13
+  }
+ # input_param { shape: { dim: 13 dim: 1 dim: 1 dim: 1 } }
+ # data_param {
+ #   source: "examples/Counting/countdb_train"
+ #   batch_size: 500
+ #   backend: LMDB
+ # }
+}
+layer {
+  name: "Count"
+  type: "MemoryData"
+  top: "data"
+  top: "label"
+  include {
+    phase: TEST
+  }
+  memory_data_param
+  {
+   batch_size: 1
+   channels: 1
+   height: 1
+   width: 13
+  }
+# input_param { shape: { dim: 13 dim: 1 dim: 1 dim: 1 } }
+# data_param {
+#   source: "examples/Counting/countdb_test"
+#   batch_size: 100
+#   backend: LMDB
+# }
+}
+
+
+layer {
+  name: "ip1"
+  type: "InnerProduct"
+  bottom: "data"
+  top: "ip1"
+  param {
+    lr_mult: 1
+  }
+  param {
+    lr_mult: 2
+  }
+  inner_product_param {
+    num_output:1300
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  name: "relu1"
+  type: "ReLU"
+  bottom: "ip1"
+  top: "ip1"
+}
+layer {
+  name: "ip2"
+  type: "InnerProduct"
+  bottom: "ip1"
+  top: "ip2"
+  param {
+    lr_mult: 1
+  }
+  param {
+    lr_mult: 2
+  }
+  inner_product_param {
+    num_output:200
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  name: "relu1"
+  type: "ReLU"
+  bottom: "ip2"
+  top: "ip2"
+}
+layer {
+  name: "ip3"
+  type: "InnerProduct"
+  bottom: "ip2"
+  top: "ip3"
+  param {
+    lr_mult: 1
+  }
+  param {
+    lr_mult: 2
+  }
+  inner_product_param {
+    num_output:16
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  name: "prob"
+  type: "Softmax"
+  bottom: "ip3"
+  top: "prob"
+  
+  include {
+    phase: TEST
+  }
+}
+layer {
+  name: "accuracy"
+  type: "Accuracy"
+  bottom: "ip3"
+  bottom: "label"
+  top: "accuracy"
+  include {
+    phase: TEST
+  }
+}
+
+layer {
+  name: "loss"
+  type: "SoftmaxWithLoss"
+  bottom: "ip3"
+  bottom: "label"
+  top: "loss"
+}
